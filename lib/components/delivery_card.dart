@@ -43,11 +43,11 @@ class DeliveryUnitCard extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final playerCoins = ref.read(
                     dcoinsProvider,
                   ); // Obtener monedas del jugador
-                  final success = unlockNotifier.unlock(playerCoins);
+                  final success = await unlockNotifier.unlock(playerCoins);
                   if (!success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
