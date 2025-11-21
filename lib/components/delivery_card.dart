@@ -22,6 +22,9 @@ class DeliveryUnitCard extends ConsumerWidget {
     final isUnlocked = ref.watch(unitUnlockProvider(unitId));
 
     if (!isUnlocked) {
+      final unlockNotifier = ref.read(unitUnlockProvider(unitId).notifier);
+      final unlockCost = unlockNotifier.unlockCost;
+
       return Card(
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -44,9 +47,7 @@ class DeliveryUnitCard extends ConsumerWidget {
                   final playerCoins = ref.read(
                     dcoinsProvider,
                   ); // Obtener monedas del jugador
-                  final success = ref
-                      .read(unitUnlockProvider(unitId).notifier)
-                      .unlock(ref, playerCoins);
+                  final success = unlockNotifier.unlock(playerCoins);
                   if (!success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -58,7 +59,7 @@ class DeliveryUnitCard extends ConsumerWidget {
                   }
                 },
                 child: Text(
-                  "Desbloquear (Costo: ${deliveryUnit.unlockCost.toStringAsFixed(0)})",
+                  "Desbloquear (Costo: ${unlockCost.toStringAsFixed(0)})",
                 ),
               ),
             ],

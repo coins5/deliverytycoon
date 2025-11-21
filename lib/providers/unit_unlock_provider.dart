@@ -2,11 +2,12 @@ import 'package:deliverytycoon/providers/dcoins_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class UnitUnlockNotifier extends StateNotifier<bool> {
-  UnitUnlockNotifier(this.unlockCost) : super(false);
+  UnitUnlockNotifier(this.ref, this.unlockCost) : super(false);
 
+  final Ref ref;
   final double unlockCost; // costo inicial
 
-  bool unlock(Ref ref, double playerCoins) {
+  bool unlock(double playerCoins) {
     if (playerCoins < unlockCost) {
       return false;
     }
@@ -29,5 +30,5 @@ final unitUnlockProvider =
         1000, // etc...
       ];
 
-      return UnitUnlockNotifier(unlockCosts[unitId]);
+      return UnitUnlockNotifier(ref, unlockCosts[unitId]);
     });
