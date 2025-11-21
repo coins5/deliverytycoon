@@ -1,23 +1,60 @@
 import 'dart:async';
 import 'package:deliverytycoon/classes/delivery_unit_state.dart';
+import 'package:deliverytycoon/database/app_database.dart';
+import 'package:deliverytycoon/providers/database_provider.dart';
 import 'package:deliverytycoon/providers/dcoins_provider.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
   final Ref ref;
+  final int unitId;
   Timer? _timer;
 
-  DeliveryUnitNotifier(this.ref)
+  DeliveryUnitNotifier(this.ref, this.unitId)
     : super(
         const DeliveryUnitState(
           deliveryProgress: 0,
-          dcoinsPerSuccessfulDelivery: 1,
           progressPerSecond: 0.2,
-          levelUpCost: 10,
+          dcoinsPerSuccessfulDelivery: 1,
           level: 1,
+          levelUpCost: 10,
         ),
       ) {
+    _loadFromDB();
     _startAutoProgress();
+  }
+
+  Future<void> _loadFromDB() async {
+    final repo = ref.read(deliveryRepositoryProvider);
+    final saved = await repo.loadUnit(unitId);
+
+    if (saved != null) {
+      state = DeliveryUnitState(
+        deliveryProgress: saved.deliveryProgress,
+        progressPerSecond: saved.progressPerSecond,
+        dcoinsPerSuccessfulDelivery: saved.dcoinsPerSuccessfulDelivery,
+        level: saved.level,
+        levelUpCost: saved.levelUpCost,
+      );
+    }
+  }
+
+  Future<void> _saveToDB() async {
+    final repo = ref.read(deliveryRepositoryProvider);
+
+    await repo.saveUnit(
+      unitId,
+      DeliveryUnitsTableCompanion(
+        id: Value(unitId),
+        deliveryProgress: Value(state.deliveryProgress),
+        progressPerSecond: Value(state.progressPerSecond),
+        dcoinsPerSuccessfulDelivery: Value(state.dcoinsPerSuccessfulDelivery),
+        level: Value(state.level),
+        levelUpCost: Value(state.levelUpCost),
+        unlocked: const Value(true),
+      ),
+    );
   }
 
   void _startAutoProgress() {
@@ -26,6 +63,7 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
     _timer = Timer.periodic(tickRate, (timer) {
       final increment = state.progressPerSecond * 0.1;
       _addProgress(increment);
+      _saveToDB(); // 👈 autosave a Drift
     });
   }
 
@@ -34,8 +72,6 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
 
     if (newProgress >= 1.0) {
       newProgress -= 1.0;
-
-      // ⭐ Agregar monedas globales
       ref
           .read(dcoinsProvider.notifier)
           .addCoins(state.dcoinsPerSuccessfulDelivery);
@@ -89,5 +125,5 @@ final deliveryUnitProvider =
       ref,
       unitId,
     ) {
-      return DeliveryUnitNotifier(ref);
+      return DeliveryUnitNotifier(ref, unitId);
     });
