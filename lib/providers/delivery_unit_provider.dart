@@ -14,7 +14,7 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
           dcoinsPerSuccessfulDelivery: 1,
           progressPerSecond: 0.2,
           levelUpCost: 10,
-          currentTier: 1,
+          level: 1,
         ),
       ) {
     _startAutoProgress();
@@ -42,6 +42,30 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
     }
 
     state = state.copyWith(deliveryProgress: newProgress);
+  }
+
+  void levelUp() {
+    final cost = state.levelUpCost;
+    final coins = ref.read(dcoinsProvider);
+
+    if (coins < cost) {
+      print("No tienes suficientes monedas");
+      return;
+    }
+
+    // 1. Restar monedas
+    ref.read(dcoinsProvider.notifier).addCoins(-cost);
+
+    // 2. Aplicar mejoras
+    final newLevel = state.level + 1;
+
+    state = state.copyWith(
+      level: newLevel,
+      progressPerSecond: state.progressPerSecond * 1.10, // +10% velocidad
+      dcoinsPerSuccessfulDelivery:
+          state.dcoinsPerSuccessfulDelivery * 1.15, // +15% dCoins
+      levelUpCost: cost * 1.15, // costo aumenta 15%
+    );
   }
 
   @override
