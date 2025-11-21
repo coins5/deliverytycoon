@@ -1,1 +1,3 @@
 https://icon-icons.com/es/icono/paquete/100522
+
+flutter pub run build_runner build
