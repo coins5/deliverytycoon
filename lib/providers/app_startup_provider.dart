@@ -1,3 +1,4 @@
+import 'package:deliverytycoon/providers/boost_repository_provider.dart';
 import 'package:deliverytycoon/providers/database_provider.dart';
 import 'package:deliverytycoon/providers/dcoins_provider.dart';
 import 'package:deliverytycoon/providers/navigator_key_provider.dart';
@@ -6,66 +7,63 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final appStartupProvider = FutureProvider<void>((ref) async {
   final repo = ref.read(deliveryRepositoryProvider);
+  final boostRepo = ref.read(boostRepositoryProvider);
 
-  // paso 1: cargar últimos datos
+  // 1 — cargar timestamps y offlineSeconds
   final lastActive = await repo.loadLastActive();
-
   final now = DateTime.now();
   final secondsOffline = now.difference(lastActive).inSeconds;
-
   if (secondsOffline <= 0) return;
 
-  print("Estuviste offline por $secondsOffline segundos");
+  // 2 — obtener multiplicador por boost
+  final boostMultiplier = await boostRepo.getActiveBoostMultiplier();
 
-  // paso 2: calcular producción offline
-  double totalCoinsEarned = 0;
+  double totalCoins = 0;
 
-  const unitCount = 3; // cambia esto según tu juego
-
+  const unitCount = 3;
   for (int id = 0; id < unitCount; id++) {
     final unit = await repo.loadUnit(id);
     if (unit == null || !unit.unlocked) continue;
 
-    // Fórmula de producción offline por unidad
-    final progressPerSecond = unit.progressPerSecond;
-    final dcoinsPerDelivery = unit.dcoinsPerSuccessfulDelivery;
+    // Fórmulas tomando upgrades
+    final pps = unit.progressPerSecond;
+    final reward = unit.dcoinsPerSuccessfulDelivery;
 
-    // progreso total acumulado offline
-    final totalProgress = secondsOffline * progressPerSecond;
-
-    // entregas completas
+    final totalProgress = pps * secondsOffline;
     final deliveries = totalProgress.floor();
 
-    // monedas ganadas
-    totalCoinsEarned += deliveries * dcoinsPerDelivery;
+    final baseCoins = deliveries * reward;
+
+    // -------- NUEVO: upgrades & boosts --------
+    final levelBonus = 1 + (unit.level * 0.05); // +5% por nivel por ejemplo
+
+    final coins = baseCoins * levelBonus * boostMultiplier;
+
+    totalCoins += coins;
   }
 
-  // paso 3: sumar a dcoins globales
-  if (totalCoinsEarned > 0) {
-    ref.read(dcoinsProvider.notifier).addCoins(totalCoinsEarned);
+  if (totalCoins > 0) {
+    ref.read(dcoinsProvider.notifier).addCoins(totalCoins);
 
-    // paso 4: mostrar modal después de cargar UI
     Future.microtask(() {
       showDialog(
         context: ref.read(navigatorKeyProvider).currentContext!,
-        builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text("¡Bienvenido de vuelta!"),
-            content: Text(
-              "Ganaste ${totalCoinsEarned.toStringAsFixed(2)} 🪙 mientras estabas fuera.",
+        builder: (dialogContext) => AlertDialog(
+          title: Text("Ganaste ${totalCoins.toStringAsFixed(2)} 🪙"),
+          content: Text(
+            "Mientras estabas fuera, tus unidades trabajaron.\n"
+            "Boost aplicado: x$boostMultiplier",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Nice!"),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text("Genial!"),
-              ),
-            ],
-          );
-        },
+          ],
+        ),
       );
     });
   }
 
-  // paso 5: actualizamos timestamp
   await repo.saveLastActive(now);
 });

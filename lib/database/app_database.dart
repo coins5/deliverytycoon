@@ -4,12 +4,12 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [DeliveryUnitsTable, GlobalStatsTable])
+@DriftDatabase(tables: [DeliveryUnitsTable, GlobalStatsTable, ActiveBoostsTable])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -25,6 +25,10 @@ class AppDatabase extends _$AppDatabase {
           "WHERE last_active IS NULL OR last_active = ''",
           [fallback],
         );
+      }
+
+      if (from < 3) {
+        await m.createTable(activeBoostsTable);
       }
     },
   );

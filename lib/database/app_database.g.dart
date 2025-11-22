@@ -740,6 +740,260 @@ class GlobalStatsTableCompanion extends UpdateCompanion<GlobalStatsTableData> {
   }
 }
 
+class $ActiveBoostsTableTable extends ActiveBoostsTable
+    with TableInfo<$ActiveBoostsTableTable, ActiveBoostsTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ActiveBoostsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _multiplierMeta = const VerificationMeta(
+    'multiplier',
+  );
+  @override
+  late final GeneratedColumn<double> multiplier = GeneratedColumn<double>(
+    'multiplier',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expiresAtMeta = const VerificationMeta(
+    'expiresAt',
+  );
+  @override
+  late final GeneratedColumn<String> expiresAt = GeneratedColumn<String>(
+    'expires_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, multiplier, expiresAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'active_boosts_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ActiveBoostsTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('multiplier')) {
+      context.handle(
+        _multiplierMeta,
+        multiplier.isAcceptableOrUnknown(data['multiplier']!, _multiplierMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_multiplierMeta);
+    }
+    if (data.containsKey('expires_at')) {
+      context.handle(
+        _expiresAtMeta,
+        expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_expiresAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ActiveBoostsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ActiveBoostsTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      multiplier: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}multiplier'],
+      )!,
+      expiresAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expires_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ActiveBoostsTableTable createAlias(String alias) {
+    return $ActiveBoostsTableTable(attachedDatabase, alias);
+  }
+}
+
+class ActiveBoostsTableData extends DataClass
+    implements Insertable<ActiveBoostsTableData> {
+  final int id;
+  final double multiplier;
+  final String expiresAt;
+  const ActiveBoostsTableData({
+    required this.id,
+    required this.multiplier,
+    required this.expiresAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['multiplier'] = Variable<double>(multiplier);
+    map['expires_at'] = Variable<String>(expiresAt);
+    return map;
+  }
+
+  ActiveBoostsTableCompanion toCompanion(bool nullToAbsent) {
+    return ActiveBoostsTableCompanion(
+      id: Value(id),
+      multiplier: Value(multiplier),
+      expiresAt: Value(expiresAt),
+    );
+  }
+
+  factory ActiveBoostsTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ActiveBoostsTableData(
+      id: serializer.fromJson<int>(json['id']),
+      multiplier: serializer.fromJson<double>(json['multiplier']),
+      expiresAt: serializer.fromJson<String>(json['expiresAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'multiplier': serializer.toJson<double>(multiplier),
+      'expiresAt': serializer.toJson<String>(expiresAt),
+    };
+  }
+
+  ActiveBoostsTableData copyWith({
+    int? id,
+    double? multiplier,
+    String? expiresAt,
+  }) => ActiveBoostsTableData(
+    id: id ?? this.id,
+    multiplier: multiplier ?? this.multiplier,
+    expiresAt: expiresAt ?? this.expiresAt,
+  );
+  ActiveBoostsTableData copyWithCompanion(ActiveBoostsTableCompanion data) {
+    return ActiveBoostsTableData(
+      id: data.id.present ? data.id.value : this.id,
+      multiplier: data.multiplier.present
+          ? data.multiplier.value
+          : this.multiplier,
+      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ActiveBoostsTableData(')
+          ..write('id: $id, ')
+          ..write('multiplier: $multiplier, ')
+          ..write('expiresAt: $expiresAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, multiplier, expiresAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ActiveBoostsTableData &&
+          other.id == this.id &&
+          other.multiplier == this.multiplier &&
+          other.expiresAt == this.expiresAt);
+}
+
+class ActiveBoostsTableCompanion
+    extends UpdateCompanion<ActiveBoostsTableData> {
+  final Value<int> id;
+  final Value<double> multiplier;
+  final Value<String> expiresAt;
+  const ActiveBoostsTableCompanion({
+    this.id = const Value.absent(),
+    this.multiplier = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+  });
+  ActiveBoostsTableCompanion.insert({
+    this.id = const Value.absent(),
+    required double multiplier,
+    required String expiresAt,
+  }) : multiplier = Value(multiplier),
+       expiresAt = Value(expiresAt);
+  static Insertable<ActiveBoostsTableData> custom({
+    Expression<int>? id,
+    Expression<double>? multiplier,
+    Expression<String>? expiresAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (multiplier != null) 'multiplier': multiplier,
+      if (expiresAt != null) 'expires_at': expiresAt,
+    });
+  }
+
+  ActiveBoostsTableCompanion copyWith({
+    Value<int>? id,
+    Value<double>? multiplier,
+    Value<String>? expiresAt,
+  }) {
+    return ActiveBoostsTableCompanion(
+      id: id ?? this.id,
+      multiplier: multiplier ?? this.multiplier,
+      expiresAt: expiresAt ?? this.expiresAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (multiplier.present) {
+      map['multiplier'] = Variable<double>(multiplier.value);
+    }
+    if (expiresAt.present) {
+      map['expires_at'] = Variable<String>(expiresAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ActiveBoostsTableCompanion(')
+          ..write('id: $id, ')
+          ..write('multiplier: $multiplier, ')
+          ..write('expiresAt: $expiresAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -748,6 +1002,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GlobalStatsTableTable globalStatsTable = $GlobalStatsTableTable(
     this,
   );
+  late final $ActiveBoostsTableTable activeBoostsTable =
+      $ActiveBoostsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -755,6 +1011,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     deliveryUnitsTable,
     globalStatsTable,
+    activeBoostsTable,
   ];
 }
 
@@ -1180,6 +1437,177 @@ typedef $$GlobalStatsTableTableProcessedTableManager =
       GlobalStatsTableData,
       PrefetchHooks Function()
     >;
+typedef $$ActiveBoostsTableTableCreateCompanionBuilder =
+    ActiveBoostsTableCompanion Function({
+      Value<int> id,
+      required double multiplier,
+      required String expiresAt,
+    });
+typedef $$ActiveBoostsTableTableUpdateCompanionBuilder =
+    ActiveBoostsTableCompanion Function({
+      Value<int> id,
+      Value<double> multiplier,
+      Value<String> expiresAt,
+    });
+
+class $$ActiveBoostsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ActiveBoostsTableTable> {
+  $$ActiveBoostsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ActiveBoostsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ActiveBoostsTableTable> {
+  $$ActiveBoostsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ActiveBoostsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ActiveBoostsTableTable> {
+  $$ActiveBoostsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<double> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expiresAt =>
+      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
+}
+
+class $$ActiveBoostsTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ActiveBoostsTableTable,
+          ActiveBoostsTableData,
+          $$ActiveBoostsTableTableFilterComposer,
+          $$ActiveBoostsTableTableOrderingComposer,
+          $$ActiveBoostsTableTableAnnotationComposer,
+          $$ActiveBoostsTableTableCreateCompanionBuilder,
+          $$ActiveBoostsTableTableUpdateCompanionBuilder,
+          (
+            ActiveBoostsTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $ActiveBoostsTableTable,
+              ActiveBoostsTableData
+            >,
+          ),
+          ActiveBoostsTableData,
+          PrefetchHooks Function()
+        > {
+  $$ActiveBoostsTableTableTableManager(
+    _$AppDatabase db,
+    $ActiveBoostsTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ActiveBoostsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ActiveBoostsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ActiveBoostsTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<double> multiplier = const Value.absent(),
+                Value<String> expiresAt = const Value.absent(),
+              }) => ActiveBoostsTableCompanion(
+                id: id,
+                multiplier: multiplier,
+                expiresAt: expiresAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required double multiplier,
+                required String expiresAt,
+              }) => ActiveBoostsTableCompanion.insert(
+                id: id,
+                multiplier: multiplier,
+                expiresAt: expiresAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ActiveBoostsTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ActiveBoostsTableTable,
+      ActiveBoostsTableData,
+      $$ActiveBoostsTableTableFilterComposer,
+      $$ActiveBoostsTableTableOrderingComposer,
+      $$ActiveBoostsTableTableAnnotationComposer,
+      $$ActiveBoostsTableTableCreateCompanionBuilder,
+      $$ActiveBoostsTableTableUpdateCompanionBuilder,
+      (
+        ActiveBoostsTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $ActiveBoostsTableTable,
+          ActiveBoostsTableData
+        >,
+      ),
+      ActiveBoostsTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1188,4 +1616,6 @@ class $AppDatabaseManager {
       $$DeliveryUnitsTableTableTableManager(_db, _db.deliveryUnitsTable);
   $$GlobalStatsTableTableTableManager get globalStatsTable =>
       $$GlobalStatsTableTableTableManager(_db, _db.globalStatsTable);
+  $$ActiveBoostsTableTableTableManager get activeBoostsTable =>
+      $$ActiveBoostsTableTableTableManager(_db, _db.activeBoostsTable);
 }

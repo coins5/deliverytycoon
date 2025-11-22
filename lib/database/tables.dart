@@ -25,3 +25,13 @@ class GlobalStatsTable extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+class ActiveBoostsTable extends Table {
+  IntColumn get id => integer()(); // solo 0 si hay 1 boost activo
+
+  RealColumn get multiplier => real()(); // ejemplo: 2.0 = x2
+  TextColumn get expiresAt => text()(); // DateTime ISO
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
