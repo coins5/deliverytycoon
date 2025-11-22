@@ -20,6 +20,8 @@ class GlobalStatsTable extends Table {
   IntColumn get id => integer()(); // always 0
   RealColumn get dcoins => real()();
 
+  TextColumn get lastActive => text()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

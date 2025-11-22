@@ -513,8 +513,19 @@ class $GlobalStatsTableTable extends GlobalStatsTable
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _lastActiveMeta = const VerificationMeta(
+    'lastActive',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, dcoins];
+  late final GeneratedColumn<String> lastActive = GeneratedColumn<String>(
+    'last_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, dcoins, lastActive];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -538,6 +549,14 @@ class $GlobalStatsTableTable extends GlobalStatsTable
     } else if (isInserting) {
       context.missing(_dcoinsMeta);
     }
+    if (data.containsKey('last_active')) {
+      context.handle(
+        _lastActiveMeta,
+        lastActive.isAcceptableOrUnknown(data['last_active']!, _lastActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lastActiveMeta);
+    }
     return context;
   }
 
@@ -555,6 +574,10 @@ class $GlobalStatsTableTable extends GlobalStatsTable
         DriftSqlType.double,
         data['${effectivePrefix}dcoins'],
       )!,
+      lastActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_active'],
+      )!,
     );
   }
 
@@ -568,17 +591,27 @@ class GlobalStatsTableData extends DataClass
     implements Insertable<GlobalStatsTableData> {
   final int id;
   final double dcoins;
-  const GlobalStatsTableData({required this.id, required this.dcoins});
+  final String lastActive;
+  const GlobalStatsTableData({
+    required this.id,
+    required this.dcoins,
+    required this.lastActive,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['dcoins'] = Variable<double>(dcoins);
+    map['last_active'] = Variable<String>(lastActive);
     return map;
   }
 
   GlobalStatsTableCompanion toCompanion(bool nullToAbsent) {
-    return GlobalStatsTableCompanion(id: Value(id), dcoins: Value(dcoins));
+    return GlobalStatsTableCompanion(
+      id: Value(id),
+      dcoins: Value(dcoins),
+      lastActive: Value(lastActive),
+    );
   }
 
   factory GlobalStatsTableData.fromJson(
@@ -589,6 +622,7 @@ class GlobalStatsTableData extends DataClass
     return GlobalStatsTableData(
       id: serializer.fromJson<int>(json['id']),
       dcoins: serializer.fromJson<double>(json['dcoins']),
+      lastActive: serializer.fromJson<String>(json['lastActive']),
     );
   }
   @override
@@ -597,15 +631,26 @@ class GlobalStatsTableData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'dcoins': serializer.toJson<double>(dcoins),
+      'lastActive': serializer.toJson<String>(lastActive),
     };
   }
 
-  GlobalStatsTableData copyWith({int? id, double? dcoins}) =>
-      GlobalStatsTableData(id: id ?? this.id, dcoins: dcoins ?? this.dcoins);
+  GlobalStatsTableData copyWith({
+    int? id,
+    double? dcoins,
+    String? lastActive,
+  }) => GlobalStatsTableData(
+    id: id ?? this.id,
+    dcoins: dcoins ?? this.dcoins,
+    lastActive: lastActive ?? this.lastActive,
+  );
   GlobalStatsTableData copyWithCompanion(GlobalStatsTableCompanion data) {
     return GlobalStatsTableData(
       id: data.id.present ? data.id.value : this.id,
       dcoins: data.dcoins.present ? data.dcoins.value : this.dcoins,
+      lastActive: data.lastActive.present
+          ? data.lastActive.value
+          : this.lastActive,
     );
   }
 
@@ -613,46 +658,59 @@ class GlobalStatsTableData extends DataClass
   String toString() {
     return (StringBuffer('GlobalStatsTableData(')
           ..write('id: $id, ')
-          ..write('dcoins: $dcoins')
+          ..write('dcoins: $dcoins, ')
+          ..write('lastActive: $lastActive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, dcoins);
+  int get hashCode => Object.hash(id, dcoins, lastActive);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GlobalStatsTableData &&
           other.id == this.id &&
-          other.dcoins == this.dcoins);
+          other.dcoins == this.dcoins &&
+          other.lastActive == this.lastActive);
 }
 
 class GlobalStatsTableCompanion extends UpdateCompanion<GlobalStatsTableData> {
   final Value<int> id;
   final Value<double> dcoins;
+  final Value<String> lastActive;
   const GlobalStatsTableCompanion({
     this.id = const Value.absent(),
     this.dcoins = const Value.absent(),
+    this.lastActive = const Value.absent(),
   });
   GlobalStatsTableCompanion.insert({
     this.id = const Value.absent(),
     required double dcoins,
-  }) : dcoins = Value(dcoins);
+    required String lastActive,
+  }) : dcoins = Value(dcoins),
+       lastActive = Value(lastActive);
   static Insertable<GlobalStatsTableData> custom({
     Expression<int>? id,
     Expression<double>? dcoins,
+    Expression<String>? lastActive,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (dcoins != null) 'dcoins': dcoins,
+      if (lastActive != null) 'last_active': lastActive,
     });
   }
 
-  GlobalStatsTableCompanion copyWith({Value<int>? id, Value<double>? dcoins}) {
+  GlobalStatsTableCompanion copyWith({
+    Value<int>? id,
+    Value<double>? dcoins,
+    Value<String>? lastActive,
+  }) {
     return GlobalStatsTableCompanion(
       id: id ?? this.id,
       dcoins: dcoins ?? this.dcoins,
+      lastActive: lastActive ?? this.lastActive,
     );
   }
 
@@ -665,6 +723,9 @@ class GlobalStatsTableCompanion extends UpdateCompanion<GlobalStatsTableData> {
     if (dcoins.present) {
       map['dcoins'] = Variable<double>(dcoins.value);
     }
+    if (lastActive.present) {
+      map['last_active'] = Variable<String>(lastActive.value);
+    }
     return map;
   }
 
@@ -672,7 +733,8 @@ class GlobalStatsTableCompanion extends UpdateCompanion<GlobalStatsTableData> {
   String toString() {
     return (StringBuffer('GlobalStatsTableCompanion(')
           ..write('id: $id, ')
-          ..write('dcoins: $dcoins')
+          ..write('dcoins: $dcoins, ')
+          ..write('lastActive: $lastActive')
           ..write(')'))
         .toString();
   }
@@ -951,9 +1013,17 @@ typedef $$DeliveryUnitsTableTableProcessedTableManager =
       PrefetchHooks Function()
     >;
 typedef $$GlobalStatsTableTableCreateCompanionBuilder =
-    GlobalStatsTableCompanion Function({Value<int> id, required double dcoins});
+    GlobalStatsTableCompanion Function({
+      Value<int> id,
+      required double dcoins,
+      required String lastActive,
+    });
 typedef $$GlobalStatsTableTableUpdateCompanionBuilder =
-    GlobalStatsTableCompanion Function({Value<int> id, Value<double> dcoins});
+    GlobalStatsTableCompanion Function({
+      Value<int> id,
+      Value<double> dcoins,
+      Value<String> lastActive,
+    });
 
 class $$GlobalStatsTableTableFilterComposer
     extends Composer<_$AppDatabase, $GlobalStatsTableTable> {
@@ -971,6 +1041,11 @@ class $$GlobalStatsTableTableFilterComposer
 
   ColumnFilters<double> get dcoins => $composableBuilder(
     column: $table.dcoins,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastActive => $composableBuilder(
+    column: $table.lastActive,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -993,6 +1068,11 @@ class $$GlobalStatsTableTableOrderingComposer
     column: $table.dcoins,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get lastActive => $composableBuilder(
+    column: $table.lastActive,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$GlobalStatsTableTableAnnotationComposer
@@ -1009,6 +1089,11 @@ class $$GlobalStatsTableTableAnnotationComposer
 
   GeneratedColumn<double> get dcoins =>
       $composableBuilder(column: $table.dcoins, builder: (column) => column);
+
+  GeneratedColumn<String> get lastActive => $composableBuilder(
+    column: $table.lastActive,
+    builder: (column) => column,
+  );
 }
 
 class $$GlobalStatsTableTableTableManager
@@ -1050,12 +1135,22 @@ class $$GlobalStatsTableTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<double> dcoins = const Value.absent(),
-              }) => GlobalStatsTableCompanion(id: id, dcoins: dcoins),
+                Value<String> lastActive = const Value.absent(),
+              }) => GlobalStatsTableCompanion(
+                id: id,
+                dcoins: dcoins,
+                lastActive: lastActive,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required double dcoins,
-              }) => GlobalStatsTableCompanion.insert(id: id, dcoins: dcoins),
+                required String lastActive,
+              }) => GlobalStatsTableCompanion.insert(
+                id: id,
+                dcoins: dcoins,
+                lastActive: lastActive,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
