@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:deliverytycoon/classes/delivery_unit_state.dart';
+import 'package:deliverytycoon/controllers/boost_controller.dart';
 import 'package:deliverytycoon/database/app_database.dart';
 import 'package:deliverytycoon/providers/database_provider.dart';
 import 'package:deliverytycoon/providers/dcoins_provider.dart';
@@ -72,9 +73,15 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
 
     if (newProgress >= 1.0) {
       newProgress -= 1.0;
-      ref
-          .read(dcoinsProvider.notifier)
-          .addCoins(state.dcoinsPerSuccessfulDelivery);
+
+      // 🔥 Aquí aplicamos upgrades + boost ONLINE
+      final baseReward = state.dcoinsPerSuccessfulDelivery;
+      // bonus por nivel (ejemplo: +5% por nivel)
+      final levelBonus = 1 + (state.level * 0.05);
+      // multiplicador global por boost (x1, x2, x3...)
+      final boostMultiplier = ref.read(boostControllerProvider);
+      final totalReward = baseReward * levelBonus * boostMultiplier.multiplier;
+      ref.read(dcoinsProvider.notifier).addCoins(totalReward);
     }
 
     state = state.copyWith(deliveryProgress: newProgress);
