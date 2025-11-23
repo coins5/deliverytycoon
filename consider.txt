@@ -1,1 +1,10 @@
 https://icon-icons.com/es/icono/paquete/100522
+
+
+corre esto para actualizar app_database.dart
+flutter pub run build_runner build
+
+
+corre esto si necesitas regenerar archivos.
+flutter pub run build_runner build --delete-conflicting-outputs
+

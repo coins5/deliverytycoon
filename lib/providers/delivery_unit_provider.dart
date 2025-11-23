@@ -1,23 +1,61 @@
 import 'dart:async';
 import 'package:deliverytycoon/classes/delivery_unit_state.dart';
+import 'package:deliverytycoon/controllers/boost_controller.dart';
+import 'package:deliverytycoon/database/app_database.dart';
+import 'package:deliverytycoon/providers/database_provider.dart';
 import 'package:deliverytycoon/providers/dcoins_provider.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
   final Ref ref;
+  final int unitId;
   Timer? _timer;
 
-  DeliveryUnitNotifier(this.ref)
+  DeliveryUnitNotifier(this.ref, this.unitId)
     : super(
         const DeliveryUnitState(
           deliveryProgress: 0,
-          dcoinsPerSuccessfulDelivery: 1,
           progressPerSecond: 0.2,
+          dcoinsPerSuccessfulDelivery: 1,
+          level: 1,
           levelUpCost: 10,
-          currentTier: 1,
         ),
       ) {
+    _loadFromDB();
     _startAutoProgress();
+  }
+
+  Future<void> _loadFromDB() async {
+    final repo = ref.read(deliveryRepositoryProvider);
+    final saved = await repo.loadUnit(unitId);
+
+    if (saved != null) {
+      state = DeliveryUnitState(
+        deliveryProgress: saved.deliveryProgress,
+        progressPerSecond: saved.progressPerSecond,
+        dcoinsPerSuccessfulDelivery: saved.dcoinsPerSuccessfulDelivery,
+        level: saved.level,
+        levelUpCost: saved.levelUpCost,
+      );
+    }
+  }
+
+  Future<void> _saveToDB() async {
+    final repo = ref.read(deliveryRepositoryProvider);
+
+    await repo.saveUnit(
+      unitId,
+      DeliveryUnitsTableCompanion(
+        id: Value(unitId),
+        deliveryProgress: Value(state.deliveryProgress),
+        progressPerSecond: Value(state.progressPerSecond),
+        dcoinsPerSuccessfulDelivery: Value(state.dcoinsPerSuccessfulDelivery),
+        level: Value(state.level),
+        levelUpCost: Value(state.levelUpCost),
+        unlocked: const Value(true),
+      ),
+    );
   }
 
   void _startAutoProgress() {
@@ -26,6 +64,7 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
     _timer = Timer.periodic(tickRate, (timer) {
       final increment = state.progressPerSecond * 0.1;
       _addProgress(increment);
+      _saveToDB(); // 👈 autosave a Drift
     });
   }
 
@@ -35,13 +74,41 @@ class DeliveryUnitNotifier extends StateNotifier<DeliveryUnitState> {
     if (newProgress >= 1.0) {
       newProgress -= 1.0;
 
-      // ⭐ Agregar monedas globales
-      ref
-          .read(dcoinsProvider.notifier)
-          .addCoins(state.dcoinsPerSuccessfulDelivery);
+      // 🔥 Aquí aplicamos upgrades + boost ONLINE
+      final baseReward = state.dcoinsPerSuccessfulDelivery;
+      // bonus por nivel (ejemplo: +5% por nivel)
+      final levelBonus = 1 + (state.level * 0.05);
+      // multiplicador global por boost (x1, x2, x3...)
+      final boostMultiplier = ref.read(boostControllerProvider);
+      final totalReward = baseReward * levelBonus * boostMultiplier.multiplier;
+      ref.read(dcoinsProvider.notifier).addCoins(totalReward);
     }
 
     state = state.copyWith(deliveryProgress: newProgress);
+  }
+
+  void levelUp() {
+    final cost = state.levelUpCost;
+    final coins = ref.read(dcoinsProvider);
+
+    if (coins < cost) {
+      print("No tienes suficientes monedas");
+      return;
+    }
+
+    // 1. Restar monedas
+    ref.read(dcoinsProvider.notifier).addCoins(-cost);
+
+    // 2. Aplicar mejoras
+    final newLevel = state.level + 1;
+
+    state = state.copyWith(
+      level: newLevel,
+      progressPerSecond: state.progressPerSecond * 1.10, // +10% velocidad
+      dcoinsPerSuccessfulDelivery:
+          state.dcoinsPerSuccessfulDelivery * 1.15, // +15% dCoins
+      levelUpCost: cost * 1.15, // costo aumenta 15%
+    );
   }
 
   @override
@@ -65,5 +132,5 @@ final deliveryUnitProvider =
       ref,
       unitId,
     ) {
-      return DeliveryUnitNotifier(ref);
+      return DeliveryUnitNotifier(ref, unitId);
     });
