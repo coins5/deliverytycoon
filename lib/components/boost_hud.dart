@@ -31,7 +31,7 @@ class BoostHUD extends ConsumerWidget {
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: .25),
                 offset: const Offset(2, 4),
                 blurRadius: 8,
               ),
