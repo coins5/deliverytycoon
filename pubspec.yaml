@@ -39,6 +39,7 @@ dependencies:
   drift_flutter:
   sqlite3_flutter_libs:
   path_provider:
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
